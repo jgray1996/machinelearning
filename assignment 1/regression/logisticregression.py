@@ -16,32 +16,25 @@ class LogisticRegression:
                                      num_iters, lambda_)
         self.theta, self.loss_history = pack
 
+    def sigmoid(self, z): return 1 / (1 + np.exp(-z))
+
     def compute_cost(self, X, y, theta, lambda_):
         m = len(y)  # number of training examples
         # Compute the hypothesis
-        h = X @ theta
-        # Compute the squared errors
-        square_errors = (h - y) ** 2
-        # Compute the regularization term (excluding theta[0])
-        regularization_term = (lambda_ / (2 * m)) * np.sum(theta ** 2)
-        # Compute the cost function
-        J_val_vec = (1 / (2 * m)) * np.sum(square_errors) + regularization_term
-        return J_val_vec
+        h = self.sigmoid(X @ theta)
+        cost = np.mean(-y * np.log(h) - (1.0 - y) * np.log(1.0 - h))
+        return cost
 
     def gradient_descent(self, X, y, theta, alpha, num_iters, lambda_):
-        # initialize list of costs
         cost_history = [] 
-        m,n = X.shape
         for _ in range(num_iters):
-            h = X @ theta.T
+            h = self.sigmoid(X @ theta)
             loss = h - y
-            grad = (X.T @ loss + lambda_ * theta) / m
-            theta = theta - grad.T * alpha
+            theta -= alpha / y.size * X.T @ loss
             cost_history.append(self.compute_cost(X, y, theta, lambda_))
         return theta, cost_history
     
-    def predict(self, x):
-        return np.polyval(self.theta, x)
+    def predict(self, X, theta, threshold = 0.5): return self.sigmoid(X @ theta)
     
     def draw_costs(self):
         import matplotlib.pyplot as plt 
